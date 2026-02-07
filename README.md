@@ -12,6 +12,8 @@ The AppSheetApp service lets you access the AppSheet API using Apps Script. The 
 
 `AppSheetApp` has been created by Martin Hawksey (https://g.dev/mhawksey), Collaboration Engineer at [CTS](https://cts.co/).
 
+> **Note:** Parallel API execution support was added by [Bien Lim](https://github.com/bienlim), see [forum post](https://discuss.google.dev/t/appsheetapp-library-run-multiple-api-calls-in-parallel/255321).
+
 ## Enabling the AppSheet API
 
 To use the AppSheetApp service you need to generate an Application Access Key for your AppSheet app. To do this read the reference documentation on [enabling the API](https://support.google.com/appsheet/answer/10105769).
@@ -22,7 +24,7 @@ This project is already published as an Apps Script library, making it easy to i
 
 1. In the **Libraries** section click on the **Add a library** button (＋)
 2. In the **Script ID** text box, enter
-   `19UWd_F9ht9KuE4gxeNdFG8qIMdBeTu5gXyecmPqr8yOEoVO8UcxBYVsJ` and click the **Lookup** button.
+   `1oB-bVxRc0Y33IaqHYbDu59Hd6m3khgNwqzKe6ksgEeKpMJcjheFr5-Y0` and click the **Lookup** button.
 3. Choose a version in the dropdown box (usually best to pick the latest
    version).
 4. Click the **Add** button.
@@ -110,11 +112,12 @@ For more detailed information on the data about the actions, properties, rows an
 | Method                                                     | Description                            |
 | :--------------------------------------------------------- | :------------------------------------- |
 | [`connect(appId, applicationAccessKey)`](#connect)         | Connect to an AppSheet App.            |
-| [`Add(tableName, rows, properties = {})`](#Add)            | Add records to a table.                |
-| [`Delete(tableName, rows, properties = {})`](#Delete)      | Delete records from a table.           |
-| [`Edit(tableName, rows, properties = {})`](#Edit)          | Update records in a table.             |
-| [`Find(tableName, rows, properties = {})`](#Find)          | Read records from a table.             |
-| [`Action(tableName, action, rows, properties = {})`](#Action)      | Invoke an action.                      |
+| [`Add(tableName, rows, properties = {}, isAsync = false)`](#Add)            | Add records to a table.                |
+| [`Delete(tableName, rows, properties = {}, isAsync = false)`](#Delete)      | Delete records from a table.           |
+| [`Edit(tableName, rows, properties = {}, isAsync = false)`](#Edit)          | Update records in a table.             |
+| [`Find(tableName, rows, properties = {}, isAsync = false)`](#Find)          | Read records from a table.             |
+| [`Action(tableName, action, rows, properties = {}, isAsync = false)`](#Action)      | Invoke an action.                      |
+| [`fetchAll(requests)`](#fetchAll)      | Execute multiple requests in parallel.                      |
 
 <a name="connect"></a>
 
@@ -142,7 +145,7 @@ const AppSheet = AppSheetApp.connect('YOUR_APP_ID', 'YOUR_ACCESS_KEY');
 
 <a name="Add"></a>
 
-## <code>Add(tableName, rows, properties) ⇒ Object</code>
+## <code>Add(tableName, rows, properties, isAsync) ⇒ Object</code>
 Add records to a table
 
 | Param | Type | Description |
@@ -150,11 +153,12 @@ Add records to a table
 | `tableName` | <code>String</code> | specifies the name of the table |
 | `rows` | <code>Array.&lt;Object&gt;</code> | One or more Rows elements. Each individual Row value must normally include the key field values of the record to be added. However, if the key field contains an Initial value, you can omit the key field value. For example, you should omit the key field value when the key field has an Initial value of UNIQUEID() or RANDBETWEEN(). The system will initialize the key field to the Initial value. |
 | `properties` | <code>Object</code> | **Optional**. Optional properties such as Locale, Location, Timezone, and UserId. [[Ref](https://support.google.com/appsheet/answer/10105398?hl=en#:~:text=for%20the%20table.-,Properties,-The%20properties%20of)] |
+| `isAsync` | <code>Boolean</code> | **Optional**. if true, return a AppSheet API request object instead of making an immediate API call. Default `false`. |
 
 **Returns**: <code>Object</code> - AppSheet Response
 <a name="Delete"></a>
 
-## <code>Delete(tableName, rows, properties) ⇒ Object</code>
+## <code>Delete(tableName, rows, properties, isAsync) ⇒ Object</code>
 Delete records from a table
 
 | Param | Type | Description |
@@ -162,12 +166,13 @@ Delete records from a table
 | `tableName` | <code>String</code> | specifies the name of the table |
 | `rows` | <code>Array.&lt;Object&gt;</code> | One or more Rows elements to be deleted. Each Row value may contain field values of the key field values of the record to be deleted. |
 | `properties` | <code>Object</code> | **Optional**. Optional properties such as Locale, Location, Timezone, and UserId. [[Ref](https://support.google.com/appsheet/answer/10105398?hl=en#:~:text=for%20the%20table.-,Properties,-The%20properties%20of)] |
+| `isAsync` | <code>Boolean</code> | **Optional**. if true, return a AppSheet API request object instead of making an immediate API call. Default `false`. |
 
 **Returns**: <code>Object</code> - AppSheet Response
 
 <a name="Edit"></a>
 
-## <code>Edit(tableName, rows, properties) ⇒ Object</code>
+## <code>Edit(tableName, rows, properties, isAsync) ⇒ Object</code>
 
 Update records in a table
 
@@ -176,12 +181,13 @@ Update records in a table
 | `tableName` | <code>String</code> | specifies the name of the table |
 | `rows` | <code>Array.&lt;Object&gt;</code> | One or more Row values to be updated. Each individual Row value must include the key field values of the record to be updated. |
 | `properties` | <code>Object</code> | **Optional**. Optional properties such as Locale, Location, Timezone, and UserId. [[Ref](https://support.google.com/appsheet/answer/10105398?hl=en#:~:text=for%20the%20table.-,Properties,-The%20properties%20of)] |
+| `isAsync` | <code>Boolean</code> | **Optional**. if true, return a AppSheet API request object instead of making an immediate API call. Default `false`. |
 
 **Returns**: <code>Object</code> - AppSheet Response
 
 <a name="Find"></a>
 
-## <code>Find(tableName, rows, properties) ⇒ Object</code>
+## <code>Find(tableName, rows, properties, isAsync) ⇒ Object</code>
 Read records from a table.
 
 In the `Selector` property, you can specify an expression to select and format the rows returned. Valid `Selector` expressions are:
@@ -218,12 +224,13 @@ function findRowsInTable(){
 | `tableName` | <code>String</code> | specifies the name of the table |
 | `rows` | <code>Array.&lt;Object&gt;</code> | **Optional**. You can omit the Selector property and specify input Rows containing the key values of the records to be read. |
 | `properties` | <code>Object</code> | **Optional**. Optional properties such as Locale, Location, Timezone, and UserId. [[Ref](https://support.google.com/appsheet/answer/10105398?hl=en#:~:text=for%20the%20table.-,Properties,-The%20properties%20of)]. Additionally the optional `Selector` property can used to specify an expression to select and format the rows returned [[Ref](https://support.google.com/appsheet/answer/10105770#:~:text=Read-,selected%20rows,-In%20the%20Selector)]. |
+| `isAsync` | <code>Boolean</code> | **Optional**. if true, return a AppSheet API request object instead of making an immediate API call. Default `false`. |
 
 **Returns**: <code>Object</code> - AppSheet Response
 
 <a name="Action"></a>
 
-## <code>Action(tableName, action, rows, properties) ⇒ Object</code>
+## <code>Action(tableName, action, rows, properties, isAsync) ⇒ Object</code>
 Invoke an action
 
 | Param | Type | Description |
@@ -232,5 +239,17 @@ Invoke an action
 | `rows` | <code>Array.&lt;Object&gt;</code> | One or more Rows elements specifying the key field values of the rows to which the action is to be applied. |
 | `action` | <code>String</code> | The action name. |
 | `properties` | <code>Object</code> | **Optional**. Optional properties such as Locale, Location, Timezone, and UserId. [[Ref](https://support.google.com/appsheet/answer/10105398?hl=en#:~:text=for%20the%20table.-,Properties,-The%20properties%20of)] |
+| `isAsync` | <code>Boolean</code> | **Optional**. if true, return a AppSheet API request object instead of making an immediate API call. Default `false`. |
 
 **Returns**: <code>Object</code> - AppSheet Response
+
+<a name="fetchAll"></a>
+
+## <code>fetchAll(requests) ⇒ Array.&lt;Object&gt;</code>
+Execute multiple requests in parallel.
+
+| Param | Type | Description |
+| --- | --- | --- |
+| `requests` | <code>...Object</code> | Variable number of AppSheet API request objects returned by calling methods with `isAsync = true` |
+
+**Returns**: <code>Array.&lt;Object&gt;</code> - Array of AppSheet Responses
